@@ -5,7 +5,6 @@ import android.app.Application;
 import android.content.Context;
 import android.os.Bundle;
 
-import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCaller;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,7 +18,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 public class ActivityResultManager {
 
-    static final Map<String, LinkedBlockingDeque<ActivityResultCallback>> activityResultCallbackMap = new HashMap<>();
+    static final Map<String, LinkedBlockingDeque<StartActivityInfo>> activityResultCallbackMap = new HashMap<>();
 
     public static void init(Context context) {
         ((Application) context.getApplicationContext()).registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {

@@ -36,24 +36,18 @@ public class ActivityResultSourceDelegate {
         ActivityResultRegistry customRegistry = activityResultSource.customRegistry();
         if (customRegistry != null) {
             activityResultLauncher = ((ActivityResultCaller) activityResultSource).registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), customRegistry, result -> {
-                ActivityResultCallback callback = getActivityResultCallbacks().pollFirst();
-                if (callback != null) {
-                    callback.onActivityResult(result.getResultCode(), result.getData(), activityResultSource);
-                }
+                dispatchResult(activityResultSource, result);
             });
         } else {
             activityResultLauncher = ((ActivityResultCaller) activityResultSource).registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-                ActivityResultCallback callback = getActivityResultCallbacks().pollFirst();
-                if (callback != null) {
-                    callback.onActivityResult(result.getResultCode(), result.getData(), activityResultSource);
-                }
+                dispatchResult(activityResultSource, result);
             });
         }
     }
 
     @NonNull
-    LinkedBlockingDeque<ActivityResultCallback> getActivityResultCallbacks() {
-        LinkedBlockingDeque<ActivityResultCallback> resultCallbacks = ActivityResultManager.activityResultCallbackMap.get(getUuid());
+    LinkedBlockingDeque<StartActivityInfo> getStartActivityInfo() {
+        LinkedBlockingDeque<StartActivityInfo> resultCallbacks = ActivityResultManager.activityResultCallbackMap.get(getUuid());
         if (resultCallbacks == null) {
             resultCallbacks = new LinkedBlockingDeque<>();
             ActivityResultManager.activityResultCallbackMap.put(getUuid(), resultCallbacks);
@@ -62,7 +56,14 @@ public class ActivityResultSourceDelegate {
     }
 
     void startActivityForResult(@NonNull Intent intent, @Nullable ActivityOptionsCompat optionsCompat, @NonNull ActivityResultCallback callback) {
-        getActivityResultCallbacks().offerFirst(callback);
+        getStartActivityInfo().offerFirst(new StartActivityInfo(intent, optionsCompat, callback));
         activityResultLauncher.launch(intent, optionsCompat);
+    }
+
+    void dispatchResult(@NonNull ActivityResultSource activityResultSource, @NonNull ActivityResult result) {
+        StartActivityInfo startActivityInfo = getStartActivityInfo().pollFirst();
+        if (startActivityInfo != null) {
+            startActivityInfo.callback.onActivityResult(new ActivityResultInfo(result.getResultCode(), result.getData(), activityResultSource, startActivityInfo.intent));
+        }
     }
 }
