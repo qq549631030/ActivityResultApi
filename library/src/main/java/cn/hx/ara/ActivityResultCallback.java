@@ -1,10 +1,10 @@
 package cn.hx.ara;
 
-import android.annotation.SuppressLint;
+import android.content.Intent;
 
-import androidx.activity.result.ActivityResultCaller;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
-public interface ActivityResultCallback<O> {
-    void onActivityResult(@NonNull ActivityResultCaller activityResultCaller, @SuppressLint("UnknownNullness") O result);
+public interface ActivityResultCallback {
+    void onActivityResult(int resultCode, @Nullable Intent data, @NonNull ActivityResultSource activityResultSource);
 }

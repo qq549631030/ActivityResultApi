@@ -29,31 +29,31 @@ public class ActivityResultSourceDelegate {
         return mUuid;
     }
 
-    void init(@NonNull ActivityResultCaller activityResultCaller, @Nullable Bundle savedInstanceState) {
+    void init(@NonNull ActivityResultSource activityResultSource, @Nullable Bundle savedInstanceState) {
         if (savedInstanceState != null) {
             mUuid = savedInstanceState.getString(ActivityResultSource.ACTIVITY_RESULT_SOURCE_UUID);
         }
-        ActivityResultRegistry customRegistry = ((ActivityResultSource) activityResultCaller).customRegistry();
+        ActivityResultRegistry customRegistry = activityResultSource.customRegistry();
         if (customRegistry != null) {
-            activityResultLauncher = activityResultCaller.registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), customRegistry, result -> {
-                ActivityResultCallback<ActivityResult> callback = getActivityResultCallbacks().pollFirst();
+            activityResultLauncher = ((ActivityResultCaller) activityResultSource).registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), customRegistry, result -> {
+                ActivityResultCallback callback = getActivityResultCallbacks().pollFirst();
                 if (callback != null) {
-                    callback.onActivityResult(activityResultCaller, result);
+                    callback.onActivityResult(result.getResultCode(), result.getData(), activityResultSource);
                 }
             });
         } else {
-            activityResultLauncher = activityResultCaller.registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-                ActivityResultCallback<ActivityResult> callback = getActivityResultCallbacks().pollFirst();
+            activityResultLauncher = ((ActivityResultCaller) activityResultSource).registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                ActivityResultCallback callback = getActivityResultCallbacks().pollFirst();
                 if (callback != null) {
-                    callback.onActivityResult(activityResultCaller, result);
+                    callback.onActivityResult(result.getResultCode(), result.getData(), activityResultSource);
                 }
             });
         }
     }
 
     @NonNull
-    LinkedBlockingDeque<ActivityResultCallback<ActivityResult>> getActivityResultCallbacks() {
-        LinkedBlockingDeque<ActivityResultCallback<ActivityResult>> resultCallbacks = ActivityResultManager.activityResultCallbackMap.get(getUuid());
+    LinkedBlockingDeque<ActivityResultCallback> getActivityResultCallbacks() {
+        LinkedBlockingDeque<ActivityResultCallback> resultCallbacks = ActivityResultManager.activityResultCallbackMap.get(getUuid());
         if (resultCallbacks == null) {
             resultCallbacks = new LinkedBlockingDeque<>();
             ActivityResultManager.activityResultCallbackMap.put(getUuid(), resultCallbacks);
@@ -61,7 +61,7 @@ public class ActivityResultSourceDelegate {
         return resultCallbacks;
     }
 
-    void startActivityForResult(@NonNull Intent intent, @Nullable ActivityOptionsCompat optionsCompat, @NonNull ActivityResultCallback<ActivityResult> callback) {
+    void startActivityForResult(@NonNull Intent intent, @Nullable ActivityOptionsCompat optionsCompat, @NonNull ActivityResultCallback callback) {
         getActivityResultCallbacks().offerFirst(callback);
         activityResultLauncher.launch(intent, optionsCompat);
     }

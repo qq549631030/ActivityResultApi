@@ -18,8 +18,8 @@ class BaseActivityTest {
     fun startActivityForResult() {
         var resultCode: Int = -2
         activityRule.scenario.onActivity {
-            it.startActivityForResult(Intent(it, SecondActivity::class.java)) { _, result ->
-                resultCode = result.resultCode
+            it.startActivityForResult(Intent(it, SecondActivity::class.java)) { code, _, _ ->
+                resultCode = code
             }
             assert(resultCode == -2)
             it.registry.dispatchForLastRequest(Activity.RESULT_OK)
@@ -33,9 +33,9 @@ class BaseActivityTest {
         var resultCode: Int = -2
         activityRule.scenario.onActivity {
             activityHash = it.hashCode()
-            it.startActivityForResult(Intent(it, SecondActivity::class.java)) { caller, result ->
+            it.startActivityForResult(Intent(it, SecondActivity::class.java)) { code, _, caller ->
                 activityHash = caller.hashCode()
-                resultCode = result.resultCode
+                resultCode = code
             }
         }
         activityRule.scenario.recreate()

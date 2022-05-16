@@ -19,7 +19,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 public class ActivityResultManager {
 
-    static final Map<String, LinkedBlockingDeque<ActivityResultCallback<ActivityResult>>> activityResultCallbackMap = new HashMap<>();
+    static final Map<String, LinkedBlockingDeque<ActivityResultCallback>> activityResultCallbackMap = new HashMap<>();
 
     public static void init(Context context) {
         ((Application) context.getApplicationContext()).registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
@@ -27,7 +27,7 @@ public class ActivityResultManager {
             public void onActivityCreated(@NonNull Activity activity, @Nullable Bundle bundle) {
                 if (activity instanceof ActivityResultSource && activity instanceof ActivityResultCaller) {
                     ActivityResultSourceDelegate activityResultSourceDelegate = ((ActivityResultSource) activity).getActivityResultSourceDelegate();
-                    activityResultSourceDelegate.init((ActivityResultCaller) activity, bundle);
+                    activityResultSourceDelegate.init((ActivityResultSource) activity, bundle);
                 }
                 if (activity instanceof FragmentActivity) {
                     ((FragmentActivity) activity).getSupportFragmentManager().registerFragmentLifecycleCallbacks(new FragmentManager.FragmentLifecycleCallbacks() {
@@ -35,7 +35,7 @@ public class ActivityResultManager {
                         public void onFragmentCreated(@NonNull FragmentManager fm, @NonNull Fragment f, @Nullable Bundle savedInstanceState) {
                             if (f instanceof ActivityResultSource) {
                                 ActivityResultSourceDelegate activityResultSourceDelegate = ((ActivityResultSource) f).getActivityResultSourceDelegate();
-                                activityResultSourceDelegate.init(f, savedInstanceState);
+                                activityResultSourceDelegate.init((ActivityResultSource) f, savedInstanceState);
                             }
                         }
 

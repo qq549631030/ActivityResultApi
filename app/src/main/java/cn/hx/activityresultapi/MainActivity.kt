@@ -3,7 +3,6 @@ package cn.hx.activityresultapi
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import androidx.activity.result.ActivityResult
 import cn.hx.activityresultapi.databinding.ActivityMainBinding
 
 class MainActivity : BaseActivity() {
@@ -16,13 +15,13 @@ class MainActivity : BaseActivity() {
         setContentView(binding.root)
         binding.btnStartActivity.setOnClickListener {
             Log.d(TAG, "start with $this")
-            startActivityForResult(Intent(this, SecondActivity::class.java)) { caller, result ->
-                (caller as? MainActivity)?.receiveResult(result)
+            startActivityForResult(Intent(this, SecondActivity::class.java)) { resultCode, data, caller ->
+                (caller as? MainActivity)?.receiveResult(resultCode, data)
             }
         }
     }
 
-    private fun receiveResult(activityResult: ActivityResult) {
-        Log.d(TAG, "receiveResult() called with: this = $this, activityResult = $activityResult")
+    private fun receiveResult(resultCode: Int, data: Intent?) {
+        Log.d(TAG, "receiveResult() called with: resultCode = $resultCode, data = $data")
     }
 }

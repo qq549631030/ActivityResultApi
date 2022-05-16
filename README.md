@@ -40,11 +40,11 @@ open class BaseFragment : Fragment(), ActivityResultSource by ActivityResultSour
 #### 3、使用
 
 ```kotlin
-  startActivityForResult(Intent(this, SecondActivity::class.java)) { caller, result ->
+  startActivityForResult(Intent(this, SecondActivity::class.java)) { resultCode, data, caller ->
                 //这里只能通过caller访问外部类的方法、属性
                 //不可直接访问外部类方法、属性，因为Activity recreate后的情况下原caller已经不存在了
                 //caller是本库的精华所在，在Activity recreate后caller是重建后的Activity或Fragment
-                (caller as? MainActivity)?.receiveResult(result)
+                (caller as? MainActivity)?.receiveResult(resultCode, data)
             }
 ```
 

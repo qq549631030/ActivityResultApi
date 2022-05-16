@@ -2,7 +2,6 @@ package cn.hx.ara;
 
 import android.content.Intent;
 
-import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultRegistry;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,12 +24,12 @@ public class ActivityResultSourceImpl implements ActivityResultSource {
     }
 
     @Override
-    public void startActivityForResult(@NonNull Intent intent, @NonNull ActivityResultCallback<ActivityResult> callback) {
+    public void startActivityForResult(@NonNull Intent intent, @NonNull ActivityResultCallback callback) {
         startActivityForResult(intent, null, callback);
     }
 
     @Override
-    public void startActivityForResult(@NonNull Intent intent, @Nullable ActivityOptionsCompat optionsCompat, @NonNull ActivityResultCallback<ActivityResult> callback) {
+    public void startActivityForResult(@NonNull Intent intent, @Nullable ActivityOptionsCompat optionsCompat, @NonNull ActivityResultCallback callback) {
         delegate.startActivityForResult(intent, optionsCompat, callback);
     }
 }

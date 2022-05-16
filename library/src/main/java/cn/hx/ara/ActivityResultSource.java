@@ -2,7 +2,6 @@ package cn.hx.ara;
 
 import android.content.Intent;
 
-import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultRegistry;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,7 +19,7 @@ public interface ActivityResultSource {
     @Nullable
     ActivityResultRegistry customRegistry();
 
-    void startActivityForResult(@NonNull Intent intent, @NonNull final ActivityResultCallback<ActivityResult> callback);
+    void startActivityForResult(@NonNull Intent intent, @NonNull final ActivityResultCallback callback);
 
-    void startActivityForResult(@NonNull Intent intent, @Nullable ActivityOptionsCompat optionsCompat, @NonNull final ActivityResultCallback<ActivityResult> callback);
+    void startActivityForResult(@NonNull Intent intent, @Nullable ActivityOptionsCompat optionsCompat, @NonNull final ActivityResultCallback callback);
 }
