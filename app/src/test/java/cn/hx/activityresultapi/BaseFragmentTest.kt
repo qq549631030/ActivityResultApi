@@ -19,8 +19,8 @@ class BaseFragmentTest {
         var resultCode: Int = -2
         activityRule.scenario.onActivity {
             val fragment = it.supportFragmentManager.findFragmentById(R.id.container) as TestFragment
-            fragment.startActivityForResult(Intent(it, SecondActivity::class.java)) { code, _, _ ->
-                resultCode = code
+            fragment.startActivityForResult(Intent(it, SecondActivity::class.java)) {
+                resultCode = it.resultCode
             }
             assert(resultCode == -2)
             fragment.registry.dispatchForLastRequest(Activity.RESULT_OK)
@@ -34,18 +34,15 @@ class BaseFragmentTest {
         var resultCode: Int = -2
         activityRule.scenario.onActivity {
             val fragment = it.supportFragmentManager.findFragmentById(R.id.container) as TestFragment
-            println("first $fragment")
             fragmentHash = fragment.hashCode()
-            fragment.startActivityForResult(Intent(it, SecondActivity::class.java)) { code, _, caller ->
-                println("caller $fragment")
-                fragmentHash = caller.hashCode()
-                resultCode = code
+            fragment.startActivityForResult(Intent(it, SecondActivity::class.java)) {
+                fragmentHash = it.caller.hashCode()
+                resultCode = it.resultCode
             }
         }
         activityRule.scenario.recreate()
         activityRule.scenario.onActivity {
             val fragment = it.supportFragmentManager.findFragmentById(R.id.container) as TestFragment
-            println("second $fragment")
             assert(fragment.hashCode() != fragmentHash)
             assert(resultCode == -2)
             fragment.registry.dispatchForLastRequest(Activity.RESULT_OK)

@@ -15,8 +15,8 @@ class MainActivity : BaseActivity() {
         setContentView(binding.root)
         binding.btnStartActivity.setOnClickListener {
             Log.d(TAG, "start with $this")
-            startActivityForResult(Intent(this, SecondActivity::class.java)) { resultCode, data, caller ->
-                (caller as? MainActivity)?.receiveResult(resultCode, data)
+            startActivityForResult(Intent(this, SecondActivity::class.java)) {
+                (it.caller as? MainActivity)?.receiveResult(it.resultCode, it.data)
             }
         }
     }
