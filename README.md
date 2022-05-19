@@ -1,6 +1,9 @@
 # Android Activity Result API 封装
+androidx.activity 1.2.0 开始新加了Activity Result API，原本的startActivityForResult被标记为过时的。
+官方做法是要在onStart之前registerForActivityResult，这就导致必须提前知道当前页面会发起哪些页面请求提前注册，但是往往我们不一定确定当前页面会发生什么，比如跳转到登录页面。
+本库做了下封装，可以在任意时机调用，并且在回调参数里增加了调用者(caller)和启动Intent，这在Activity recreate的情况下非常有用！
 
-相比默认实现，本库在回调参数里增加了调用者，这在Activity recreate的情况下非常有用！
+要验证效果，可在“开发者选项”中把“不保留活动”打开
 
 ### gradle依赖
 
@@ -43,10 +46,17 @@ open class BaseFragment : Fragment(), ActivityResultSource by ActivityResultSour
 
 ```kotlin
 startActivityForResult(Intent(this, SecondActivity::class.java)) {
+     //回调参数ActivityResultInfo各属性说明：
+     //resultCode：调用结果
+     //data：额外返回数据
+     //caller：调用者
+     //startIntent：启动本次调用的Intent
+
     //这里只能通过caller访问外部类的方法、属性
     //不可直接访问外部类方法、属性，因为Activity recreate后的情况下原caller已经不存在了
     //caller是本库的精华所在，在Activity recreate后caller是重建后的Activity或Fragment
-    (it.caller as? MainActivity)?.receiveResult(it.resultCode, it.data)
+    (it.caller as YourActivityResultSourceActivity).someMethod(it.resultCode, it.data, it.startIntent)
+    (it.caller as YourActivityResultSourceFragment).someMethod(it.resultCode, it.data, it.startIntent)
 }
 ```
 
