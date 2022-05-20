@@ -19,6 +19,9 @@ public interface ActivityResultSource {
     @Nullable
     ActivityResultRegistry customRegistry();
 
+    @NonNull
+    String getSourceUuid();
+
     void startActivityForResult(@NonNull Intent intent, @NonNull final ActivityResultCallback callback);
 
     void startActivityForResult(@NonNull Intent intent, @Nullable ActivityOptionsCompat optionsCompat, @NonNull final ActivityResultCallback callback);

@@ -18,6 +18,7 @@ import java.util.concurrent.LinkedBlockingDeque;
 
 public class ActivityResultManager {
 
+    static final Map<String, ActivityResultSource> activityResultSourceMap = new HashMap<>();
     static final Map<String, LinkedBlockingDeque<StartActivityInfo>> activityResultCallbackMap = new HashMap<>();
 
     public static void init(Context context) {
@@ -27,6 +28,7 @@ public class ActivityResultManager {
                 if (activity instanceof ActivityResultSource && activity instanceof ActivityResultCaller) {
                     ActivityResultSourceDelegate activityResultSourceDelegate = ((ActivityResultSource) activity).getActivityResultSourceDelegate();
                     activityResultSourceDelegate.init((ActivityResultSource) activity, bundle);
+                    activityResultSourceMap.put(((ActivityResultSource) activity).getSourceUuid(), (ActivityResultSource) activity);
                 }
                 if (activity instanceof FragmentActivity) {
                     ((FragmentActivity) activity).getSupportFragmentManager().registerFragmentLifecycleCallbacks(new FragmentManager.FragmentLifecycleCallbacks() {
@@ -35,14 +37,14 @@ public class ActivityResultManager {
                             if (f instanceof ActivityResultSource) {
                                 ActivityResultSourceDelegate activityResultSourceDelegate = ((ActivityResultSource) f).getActivityResultSourceDelegate();
                                 activityResultSourceDelegate.init((ActivityResultSource) f, savedInstanceState);
+                                activityResultSourceMap.put(((ActivityResultSource) f).getSourceUuid(), (ActivityResultSource) f);
                             }
                         }
 
                         @Override
                         public void onFragmentSaveInstanceState(@NonNull FragmentManager fm, @NonNull Fragment f, @NonNull Bundle outState) {
                             if (f instanceof ActivityResultSource) {
-                                ActivityResultSourceDelegate activityResultSourceDelegate = ((ActivityResultSource) f).getActivityResultSourceDelegate();
-                                outState.putString(ActivityResultSource.ACTIVITY_RESULT_SOURCE_UUID, activityResultSourceDelegate.getUuid());
+                                outState.putString(ActivityResultSource.ACTIVITY_RESULT_SOURCE_UUID, ((ActivityResultSource) f).getSourceUuid());
                             }
                         }
 
@@ -50,6 +52,7 @@ public class ActivityResultManager {
                         public void onFragmentDestroyed(@NonNull FragmentManager fm, @NonNull Fragment f) {
                             if (f instanceof ActivityResultSource && f.isRemoving()) {
                                 activityResultCallbackMap.remove(((ActivityResultSource) f).getActivityResultSourceDelegate().getUuid());
+                                activityResultSourceMap.remove(((ActivityResultSource) f).getSourceUuid());
                             }
                         }
                     }, true);
@@ -79,17 +82,22 @@ public class ActivityResultManager {
             @Override
             public void onActivitySaveInstanceState(@NonNull Activity activity, @NonNull Bundle bundle) {
                 if (activity instanceof ActivityResultSource) {
-                    ActivityResultSourceDelegate activityResultSourceDelegate = ((ActivityResultSource) activity).getActivityResultSourceDelegate();
-                    bundle.putString(ActivityResultSource.ACTIVITY_RESULT_SOURCE_UUID, activityResultSourceDelegate.getUuid());
+                    bundle.putString(ActivityResultSource.ACTIVITY_RESULT_SOURCE_UUID, ((ActivityResultSource) activity).getSourceUuid());
                 }
             }
 
             @Override
             public void onActivityDestroyed(@NonNull Activity activity) {
                 if (activity instanceof ActivityResultSource && activity.isFinishing()) {
-                    activityResultCallbackMap.remove(((ActivityResultSource) activity).getActivityResultSourceDelegate().getUuid());
+                    activityResultCallbackMap.remove(((ActivityResultSource) activity).getSourceUuid());
+                    activityResultSourceMap.remove(((ActivityResultSource) activity).getSourceUuid());
                 }
             }
         });
+    }
+
+    @Nullable
+    public static ActivityResultSource findSourceByUuid(@NonNull String uuid) {
+        return activityResultSourceMap.get(uuid);
     }
 }

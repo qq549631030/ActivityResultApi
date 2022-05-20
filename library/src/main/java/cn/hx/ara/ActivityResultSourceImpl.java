@@ -23,6 +23,12 @@ public class ActivityResultSourceImpl implements ActivityResultSource {
         return null;
     }
 
+    @NonNull
+    @Override
+    public String getSourceUuid() {
+        return delegate.getUuid();
+    }
+
     @Override
     public void startActivityForResult(@NonNull Intent intent, @NonNull ActivityResultCallback callback) {
         startActivityForResult(intent, null, callback);
