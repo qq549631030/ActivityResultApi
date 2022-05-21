@@ -1,6 +1,7 @@
 package cn.hx.ara;
 
 import android.content.Intent;
+import android.net.Uri;
 
 import androidx.activity.result.ActivityResultRegistry;
 import androidx.annotation.NonNull;
@@ -25,4 +26,10 @@ public interface ActivityResultSource {
     void startActivityForResult(@NonNull Intent intent, @NonNull final ActivityResultCallback callback);
 
     void startActivityForResult(@NonNull Intent intent, @Nullable ActivityOptionsCompat optionsCompat, @NonNull final ActivityResultCallback callback);
+
+    void takePicture(@NonNull Uri outputUri, @NonNull final TakePictureCallback callback);
+
+    void takeVideo(@NonNull Uri outputUri, @NonNull final TakeVideoCallback callback);
+
+    void takeVideo(@NonNull VideoConfig config, @NonNull final TakeVideoCallback callback);
 }

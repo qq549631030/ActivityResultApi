@@ -1,6 +1,7 @@
 package cn.hx.ara;
 
 import android.content.Intent;
+import android.net.Uri;
 
 import androidx.activity.result.ActivityResultRegistry;
 import androidx.annotation.NonNull;
@@ -37,5 +38,20 @@ public class ActivityResultSourceImpl implements ActivityResultSource {
     @Override
     public void startActivityForResult(@NonNull Intent intent, @Nullable ActivityOptionsCompat optionsCompat, @NonNull ActivityResultCallback callback) {
         delegate.startActivityForResult(intent, optionsCompat, callback);
+    }
+
+    @Override
+    public void takePicture(@NonNull Uri outputUri, @NonNull TakePictureCallback callback) {
+        delegate.takePicture(outputUri, callback);
+    }
+
+    @Override
+    public void takeVideo(@NonNull Uri outputUri, @NonNull TakeVideoCallback callback) {
+        delegate.takeVideo(new VideoConfig(outputUri), callback);
+    }
+
+    @Override
+    public void takeVideo(@NonNull VideoConfig config, @NonNull TakeVideoCallback callback) {
+        delegate.takeVideo(config, callback);
     }
 }

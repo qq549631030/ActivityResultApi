@@ -20,6 +20,8 @@ public class ActivityResultManager {
 
     static final Map<String, ActivityResultSource> activityResultSourceMap = new HashMap<>();
     static final Map<String, LinkedBlockingDeque<StartActivityInfo>> activityResultCallbackMap = new HashMap<>();
+    static final Map<String, LinkedBlockingDeque<TakePictureInfo>> takePictureCallbackMap = new HashMap<>();
+    static final Map<String, LinkedBlockingDeque<TakeVideoInfo>> takeVideoCallbackMap = new HashMap<>();
 
     public static void init(Context context) {
         ((Application) context.getApplicationContext()).registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
@@ -51,8 +53,10 @@ public class ActivityResultManager {
                         @Override
                         public void onFragmentDestroyed(@NonNull FragmentManager fm, @NonNull Fragment f) {
                             if (f instanceof ActivityResultSource && f.isRemoving()) {
-                                activityResultCallbackMap.remove(((ActivityResultSource) f).getActivityResultSourceDelegate().getUuid());
                                 activityResultSourceMap.remove(((ActivityResultSource) f).getSourceUuid());
+                                activityResultCallbackMap.remove(((ActivityResultSource) f).getSourceUuid());
+                                takePictureCallbackMap.remove(((ActivityResultSource) f).getSourceUuid());
+                                takeVideoCallbackMap.remove(((ActivityResultSource) f).getSourceUuid());
                             }
                         }
                     }, true);
@@ -89,8 +93,10 @@ public class ActivityResultManager {
             @Override
             public void onActivityDestroyed(@NonNull Activity activity) {
                 if (activity instanceof ActivityResultSource && activity.isFinishing()) {
-                    activityResultCallbackMap.remove(((ActivityResultSource) activity).getSourceUuid());
                     activityResultSourceMap.remove(((ActivityResultSource) activity).getSourceUuid());
+                    activityResultCallbackMap.remove(((ActivityResultSource) activity).getSourceUuid());
+                    takePictureCallbackMap.remove(((ActivityResultSource) activity).getSourceUuid());
+                    takeVideoCallbackMap.remove(((ActivityResultSource) activity).getSourceUuid());
                 }
             }
         });
