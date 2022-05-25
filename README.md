@@ -49,12 +49,14 @@ startActivityForResult(Intent(this, SecondActivity::class.java)) {
      //回调参数ActivityResultInfo各属性说明：
      //resultCode：调用结果
      //data：额外返回数据
-     //caller：调用者
+     //sourceUuid：调用者uuid
      //startIntent：启动本次调用的Intent
+     //getCaller()方法: 返回非空调用者，为空抛异常（通常不会出现，除非在调用者onCreate之前调用）
+     //getSafeCaller()方法: 返回可空调用者，
 
-    //这里只能通过caller访问外部类的方法、属性
-    //不可直接访问外部类方法、属性，因为Activity recreate后的情况下原caller已经不存在了
-    //caller是本库的精华所在，在Activity recreate后caller是重建后的Activity或Fragment
+    //这里只能通过getCaller()访问外部类的方法、属性
+    //不可直接访问外部类方法、属性，因为Activity recreate后的情况下原调用者已经不存在了
+    //getCaller()是本库的精华所在，在Activity recreate后getCaller()是重建后的Activity或Fragment
     (it.caller as YourActivityResultSourceActivity).someMethod(it.resultCode, it.data, it.startIntent)
     (it.caller as YourActivityResultSourceFragment).someMethod(it.resultCode, it.data, it.startIntent)
 }

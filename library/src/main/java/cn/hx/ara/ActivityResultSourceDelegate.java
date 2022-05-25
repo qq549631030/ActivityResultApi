@@ -108,21 +108,21 @@ public class ActivityResultSourceDelegate {
     void dispatchStartActivityResult(@NonNull ActivityResultSource activityResultSource, @NonNull ActivityResult result) {
         StartActivityInfo startActivityInfo = getStartActivityInfo().pollFirst();
         if (startActivityInfo != null) {
-            startActivityInfo.callback.onActivityResult(new ActivityResultInfo(result.getResultCode(), result.getData(), activityResultSource, startActivityInfo.intent));
+            startActivityInfo.callback.onActivityResult(new ActivityResultInfo(result.getResultCode(), result.getData(), activityResultSource.getSourceUuid(), startActivityInfo.intent));
         }
     }
 
     void dispatchTakePictureResult(@NonNull ActivityResultSource activityResultSource, boolean result) {
         TakePictureInfo takePictureInfo = getTakePictureInfo().pollFirst();
         if (takePictureInfo != null) {
-            takePictureInfo.callback.onTakePictureResult(new TakePictureResultInfo(result, activityResultSource, takePictureInfo.outputUri));
+            takePictureInfo.callback.onTakePictureResult(new TakePictureResultInfo(result, activityResultSource.getSourceUuid(), takePictureInfo.outputUri));
         }
     }
 
     void dispatchTakeVideoResult(@NonNull ActivityResultSource activityResultSource, boolean result) {
         TakeVideoInfo takeVideoInfo = getTakeVideoInfo().pollFirst();
         if (takeVideoInfo != null) {
-            takeVideoInfo.callback.onTakeVideoResult(new TakeVideoResultInfo(result, activityResultSource, takeVideoInfo.config.outputUri));
+            takeVideoInfo.callback.onTakeVideoResult(new TakeVideoResultInfo(result, activityResultSource.getSourceUuid(), takeVideoInfo.config.outputUri));
         }
     }
 }
