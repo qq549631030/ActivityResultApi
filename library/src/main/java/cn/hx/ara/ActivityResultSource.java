@@ -32,4 +32,8 @@ public interface ActivityResultSource {
     void takeVideo(@NonNull Uri outputUri, @NonNull final TakeVideoCallback callback);
 
     void takeVideo(@NonNull VideoConfig config, @NonNull final TakeVideoCallback callback);
+
+    void requestPermission(@NonNull String permission, @NonNull final RequestPermissionCallback callback);
+
+    void requestMultiplePermissions(@NonNull String[] permissions, @NonNull final RequestMultiplePermissionsCallback callback);
 }

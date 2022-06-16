@@ -1,9 +1,12 @@
 package cn.hx.activityresultapi
 
+import android.Manifest
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.rules.ActivityScenarioRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -122,6 +125,82 @@ class BaseActivityTest {
             it.registry.dispatchForLastRequest(Activity.RESULT_CANCELED, null)
             assert(it.hashCode() == activityHash)
             assert(result == false)
+        }
+    }
+
+    @Test
+    fun requestPermission() {
+        var grantState: Boolean? = null
+
+        activityRule.scenario.onActivity {
+            it.requestPermission(Manifest.permission.CAMERA) { result ->
+                grantState = result.grantState
+            }
+            assert(grantState == null)
+            it.registry.dispatchForLastRequest(Activity.RESULT_OK, Intent().apply {
+                putExtra(ActivityResultContracts.RequestMultiplePermissions.EXTRA_PERMISSIONS, arrayOf(Manifest.permission.CAMERA))
+                putExtra(ActivityResultContracts.RequestMultiplePermissions.EXTRA_PERMISSION_GRANT_RESULTS, intArrayOf(PackageManager.PERMISSION_GRANTED))
+            })
+            assert(grantState == true)
+        }
+    }
+
+    @Test
+    fun requestPermission_recreate() {
+        var grantState: Boolean? = null
+        activityRule.scenario.onActivity {
+            it.requestPermission(Manifest.permission.CAMERA) { result ->
+                grantState = result.grantState
+            }
+            assert(grantState == null)
+        }
+        activityRule.scenario.recreate()
+        activityRule.scenario.onActivity {
+            assert(grantState == null)
+            it.registry.dispatchForLastRequest(Activity.RESULT_OK, Intent().apply {
+                putExtra(ActivityResultContracts.RequestMultiplePermissions.EXTRA_PERMISSIONS, arrayOf(Manifest.permission.CAMERA))
+                putExtra(ActivityResultContracts.RequestMultiplePermissions.EXTRA_PERMISSION_GRANT_RESULTS, intArrayOf(PackageManager.PERMISSION_DENIED))
+            })
+            assert(grantState == false)
+        }
+    }
+
+    @Test
+    fun requestMultiplePermissions() {
+        var grantState: Map<String, Boolean>? = null
+        activityRule.scenario.onActivity {
+            it.requestMultiplePermissions(arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)) { result ->
+                grantState = result.grantState
+            }
+            assert(grantState == null)
+            it.registry.dispatchForLastRequest(Activity.RESULT_OK, Intent().apply {
+                putExtra(ActivityResultContracts.RequestMultiplePermissions.EXTRA_PERMISSIONS, arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO))
+                putExtra(ActivityResultContracts.RequestMultiplePermissions.EXTRA_PERMISSION_GRANT_RESULTS, intArrayOf(PackageManager.PERMISSION_GRANTED, PackageManager.PERMISSION_GRANTED))
+            })
+            assert(grantState != null)
+            assert(grantState?.get(Manifest.permission.CAMERA) == true)
+            assert(grantState?.get(Manifest.permission.RECORD_AUDIO) == true)
+        }
+    }
+
+    @Test
+    fun requestMultiplePermissions_recreate() {
+        var grantState: Map<String, Boolean>? = null
+        activityRule.scenario.onActivity {
+            it.requestMultiplePermissions(arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO)) { result ->
+                grantState = result.grantState
+            }
+            assert(grantState == null)
+        }
+        activityRule.scenario.recreate()
+        activityRule.scenario.onActivity {
+            it.registry.dispatchForLastRequest(Activity.RESULT_OK, Intent().apply {
+                putExtra(ActivityResultContracts.RequestMultiplePermissions.EXTRA_PERMISSIONS, arrayOf(Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO))
+                putExtra(ActivityResultContracts.RequestMultiplePermissions.EXTRA_PERMISSION_GRANT_RESULTS, intArrayOf(PackageManager.PERMISSION_DENIED, PackageManager.PERMISSION_GRANTED))
+            })
+            assert(grantState != null)
+            assert(grantState?.get(Manifest.permission.CAMERA) == false)
+            assert(grantState?.get(Manifest.permission.RECORD_AUDIO) == true)
         }
     }
 }

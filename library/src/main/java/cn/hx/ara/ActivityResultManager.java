@@ -22,6 +22,8 @@ public class ActivityResultManager {
     static final Map<String, LinkedBlockingDeque<StartActivityInfo>> activityResultCallbackMap = new HashMap<>();
     static final Map<String, LinkedBlockingDeque<TakePictureInfo>> takePictureCallbackMap = new HashMap<>();
     static final Map<String, LinkedBlockingDeque<TakeVideoInfo>> takeVideoCallbackMap = new HashMap<>();
+    static final Map<String, LinkedBlockingDeque<RequestPermissionInfo>> requestPermissionCallbackMap = new HashMap<>();
+    static final Map<String, LinkedBlockingDeque<RequestMultiplePermissionsInfo>> requestMultiplePermissionsCallbackMap = new HashMap<>();
 
     public static void init(Context context) {
         ((Application) context.getApplicationContext()).registerActivityLifecycleCallbacks(new Application.ActivityLifecycleCallbacks() {
@@ -58,6 +60,8 @@ public class ActivityResultManager {
                                     activityResultCallbackMap.remove(((ActivityResultSource) f).getSourceUuid());
                                     takePictureCallbackMap.remove(((ActivityResultSource) f).getSourceUuid());
                                     takeVideoCallbackMap.remove(((ActivityResultSource) f).getSourceUuid());
+                                    requestPermissionCallbackMap.remove(((ActivityResultSource) f).getSourceUuid());
+                                    requestMultiplePermissionsCallbackMap.remove(((ActivityResultSource) f).getSourceUuid());
                                 }
                             }
                         }
@@ -100,6 +104,8 @@ public class ActivityResultManager {
                         activityResultCallbackMap.remove(((ActivityResultSource) activity).getSourceUuid());
                         takePictureCallbackMap.remove(((ActivityResultSource) activity).getSourceUuid());
                         takeVideoCallbackMap.remove(((ActivityResultSource) activity).getSourceUuid());
+                        requestPermissionCallbackMap.remove(((ActivityResultSource) activity).getSourceUuid());
+                        requestMultiplePermissionsCallbackMap.remove(((ActivityResultSource) activity).getSourceUuid());
                     }
                 }
             }

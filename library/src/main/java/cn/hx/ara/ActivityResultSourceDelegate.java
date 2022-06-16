@@ -13,6 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityOptionsCompat;
 
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -23,6 +24,8 @@ public class ActivityResultSourceDelegate {
     private ActivityResultLauncher<Intent> activityResultLauncher;
     private ActivityResultLauncher<Uri> takePictureLauncher;
     private ActivityResultLauncher<VideoConfig> takeVideoLauncher;
+    private ActivityResultLauncher<String> requestPermissionLauncher;
+    private ActivityResultLauncher<String[]> requestMultiplePermissionsLauncher;
 
     @NonNull
     String getUuid() {
@@ -47,6 +50,12 @@ public class ActivityResultSourceDelegate {
             takeVideoLauncher = ((ActivityResultCaller) activityResultSource).registerForActivityResult(new CustomCaptureVideo(), customRegistry, result -> {
                 dispatchTakeVideoResult(activityResultSource, result);
             });
+            requestPermissionLauncher = ((ActivityResultCaller) activityResultSource).registerForActivityResult(new ActivityResultContracts.RequestPermission(), customRegistry, result -> {
+                dispatchRequestPermissionResult(activityResultSource, result);
+            });
+            requestMultiplePermissionsLauncher = ((ActivityResultCaller) activityResultSource).registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), customRegistry, result -> {
+                dispatchRequestMultiplePermissionsResult(activityResultSource, result);
+            });
         } else {
             activityResultLauncher = ((ActivityResultCaller) activityResultSource).registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 dispatchStartActivityResult(activityResultSource, result);
@@ -56,6 +65,12 @@ public class ActivityResultSourceDelegate {
             });
             takeVideoLauncher = ((ActivityResultCaller) activityResultSource).registerForActivityResult(new CustomCaptureVideo(), result -> {
                 dispatchTakeVideoResult(activityResultSource, result);
+            });
+            requestPermissionLauncher = ((ActivityResultCaller) activityResultSource).registerForActivityResult(new ActivityResultContracts.RequestPermission(), result -> {
+                dispatchRequestPermissionResult(activityResultSource, result);
+            });
+            requestMultiplePermissionsLauncher = ((ActivityResultCaller) activityResultSource).registerForActivityResult(new ActivityResultContracts.RequestMultiplePermissions(), result -> {
+                dispatchRequestMultiplePermissionsResult(activityResultSource, result);
             });
         }
     }
@@ -90,6 +105,26 @@ public class ActivityResultSourceDelegate {
         return resultCallbacks;
     }
 
+    @NonNull
+    LinkedBlockingDeque<RequestPermissionInfo> getRequestPermissionInfo() {
+        LinkedBlockingDeque<RequestPermissionInfo> resultCallbacks = ActivityResultManager.requestPermissionCallbackMap.get(getUuid());
+        if (resultCallbacks == null) {
+            resultCallbacks = new LinkedBlockingDeque<>();
+            ActivityResultManager.requestPermissionCallbackMap.put(getUuid(), resultCallbacks);
+        }
+        return resultCallbacks;
+    }
+
+    @NonNull
+    LinkedBlockingDeque<RequestMultiplePermissionsInfo> getRequestMultiplePermissionsInfo() {
+        LinkedBlockingDeque<RequestMultiplePermissionsInfo> resultCallbacks = ActivityResultManager.requestMultiplePermissionsCallbackMap.get(getUuid());
+        if (resultCallbacks == null) {
+            resultCallbacks = new LinkedBlockingDeque<>();
+            ActivityResultManager.requestMultiplePermissionsCallbackMap.put(getUuid(), resultCallbacks);
+        }
+        return resultCallbacks;
+    }
+
     void startActivityForResult(@NonNull Intent intent, @Nullable ActivityOptionsCompat optionsCompat, @NonNull ActivityResultCallback callback) {
         getStartActivityInfo().offerFirst(new StartActivityInfo(intent, optionsCompat, callback));
         activityResultLauncher.launch(intent, optionsCompat);
@@ -105,24 +140,48 @@ public class ActivityResultSourceDelegate {
         takeVideoLauncher.launch(config);
     }
 
+    void requestPermission(@NonNull String permission, @NonNull RequestPermissionCallback callback) {
+        getRequestPermissionInfo().offerFirst(new RequestPermissionInfo(permission, callback));
+        requestPermissionLauncher.launch(permission);
+    }
+
+    void requestMultiplePermissions(@NonNull String[] permissions, @NonNull RequestMultiplePermissionsCallback callback) {
+        getRequestMultiplePermissionsInfo().offerFirst(new RequestMultiplePermissionsInfo(permissions, callback));
+        requestMultiplePermissionsLauncher.launch(permissions);
+    }
+
     void dispatchStartActivityResult(@NonNull ActivityResultSource activityResultSource, @NonNull ActivityResult result) {
         StartActivityInfo startActivityInfo = getStartActivityInfo().pollFirst();
         if (startActivityInfo != null) {
-            startActivityInfo.callback.onActivityResult(new ActivityResultInfo(result.getResultCode(), result.getData(), activityResultSource.getSourceUuid(), startActivityInfo.intent));
+            startActivityInfo.callback.onActivityResult(new StartActivityResultInfo(activityResultSource.getSourceUuid(), result.getResultCode(), result.getData(), startActivityInfo.intent));
         }
     }
 
     void dispatchTakePictureResult(@NonNull ActivityResultSource activityResultSource, boolean result) {
         TakePictureInfo takePictureInfo = getTakePictureInfo().pollFirst();
         if (takePictureInfo != null) {
-            takePictureInfo.callback.onTakePictureResult(new TakePictureResultInfo(result, activityResultSource.getSourceUuid(), takePictureInfo.outputUri));
+            takePictureInfo.callback.onTakePictureResult(new TakePictureResultInfo(activityResultSource.getSourceUuid(), result, takePictureInfo.outputUri));
         }
     }
 
     void dispatchTakeVideoResult(@NonNull ActivityResultSource activityResultSource, boolean result) {
         TakeVideoInfo takeVideoInfo = getTakeVideoInfo().pollFirst();
         if (takeVideoInfo != null) {
-            takeVideoInfo.callback.onTakeVideoResult(new TakeVideoResultInfo(result, activityResultSource.getSourceUuid(), takeVideoInfo.config.outputUri));
+            takeVideoInfo.callback.onTakeVideoResult(new TakeVideoResultInfo(activityResultSource.getSourceUuid(), result, takeVideoInfo.config.outputUri));
+        }
+    }
+
+    void dispatchRequestPermissionResult(@NonNull ActivityResultSource activityResultSource, Boolean result) {
+        RequestPermissionInfo requestPermissionInfo = getRequestPermissionInfo().pollFirst();
+        if (requestPermissionInfo != null) {
+            requestPermissionInfo.callback.onRequestPermissionResult(new RequestPermissionResultInfo(activityResultSource.getSourceUuid(), requestPermissionInfo.permission, result));
+        }
+    }
+
+    void dispatchRequestMultiplePermissionsResult(@NonNull ActivityResultSource activityResultSource, Map<String, Boolean> result) {
+        RequestMultiplePermissionsInfo requestMultiplePermissionsInfo = getRequestMultiplePermissionsInfo().pollFirst();
+        if (requestMultiplePermissionsInfo != null) {
+            requestMultiplePermissionsInfo.callback.onRequestMultiplePermissionsResult(new RequestMultiplePermissionsResultInfo(activityResultSource.getSourceUuid(), requestMultiplePermissionsInfo.permissions, result));
         }
     }
 }

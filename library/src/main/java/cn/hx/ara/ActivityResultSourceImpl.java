@@ -54,4 +54,14 @@ public class ActivityResultSourceImpl implements ActivityResultSource {
     public void takeVideo(@NonNull VideoConfig config, @NonNull TakeVideoCallback callback) {
         delegate.takeVideo(config, callback);
     }
+
+    @Override
+    public void requestPermission(@NonNull String permission, @NonNull RequestPermissionCallback callback) {
+        delegate.requestPermission(permission, callback);
+    }
+
+    @Override
+    public void requestMultiplePermissions(@NonNull String[] permissions, @NonNull RequestMultiplePermissionsCallback callback) {
+        delegate.requestMultiplePermissions(permissions, callback);
+    }
 }
