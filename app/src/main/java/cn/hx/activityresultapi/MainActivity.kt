@@ -1,10 +1,13 @@
 package cn.hx.activityresultapi
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
+import androidx.core.app.ActivityCompat
 import androidx.core.content.FileProvider
 import cn.hx.activityresultapi.databinding.ActivityMainBinding
 import cn.hx.ara.VideoConfig
@@ -54,6 +57,18 @@ class MainActivity : BaseActivity() {
             }
             takeVideo(VideoConfig(outputUri, 1, 10, 10 * 1024 * 1024L)) {
                 (it.caller as? MainActivity)?.takeVideoResult(it.success, it.outputUri)
+            }
+        }
+        binding.btnRequestPerm.setOnClickListener {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                    Log.d(TAG, "no permission ${Manifest.permission.READ_EXTERNAL_STORAGE} do request....")
+                    requestPermission(Manifest.permission.READ_EXTERNAL_STORAGE) {
+                        Log.d(TAG, "requestPermission ${it.permission}: result = ${it.grantState},  shouldShowRequestPermissionRationale = ${it.shouldRationale}")
+                    }
+                } else {
+                    Log.d(TAG, "have permission ${Manifest.permission.READ_EXTERNAL_STORAGE}")
+                }
             }
         }
     }

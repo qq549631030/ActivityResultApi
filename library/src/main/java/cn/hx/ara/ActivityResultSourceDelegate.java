@@ -1,5 +1,6 @@
 package cn.hx.ara;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -11,8 +12,11 @@ import androidx.activity.result.ActivityResultRegistry;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.ActivityOptionsCompat;
+import androidx.fragment.app.Fragment;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.LinkedBlockingDeque;
@@ -174,14 +178,39 @@ public class ActivityResultSourceDelegate {
     void dispatchRequestPermissionResult(@NonNull ActivityResultSource activityResultSource, Boolean result) {
         RequestPermissionInfo requestPermissionInfo = getRequestPermissionInfo().pollFirst();
         if (requestPermissionInfo != null) {
-            requestPermissionInfo.callback.onRequestPermissionResult(new RequestPermissionResultInfo(activityResultSource.getSourceUuid(), requestPermissionInfo.permission, result));
+            boolean shouldRationale = false;
+            if (!result) {
+                shouldRationale = shouldShowRequestPermissionRationale(activityResultSource, requestPermissionInfo.permission);
+            }
+            requestPermissionInfo.callback.onRequestPermissionResult(new RequestPermissionResultInfo(activityResultSource.getSourceUuid(), requestPermissionInfo.permission, result, shouldRationale));
         }
     }
 
     void dispatchRequestMultiplePermissionsResult(@NonNull ActivityResultSource activityResultSource, Map<String, Boolean> result) {
         RequestMultiplePermissionsInfo requestMultiplePermissionsInfo = getRequestMultiplePermissionsInfo().pollFirst();
         if (requestMultiplePermissionsInfo != null) {
-            requestMultiplePermissionsInfo.callback.onRequestMultiplePermissionsResult(new RequestMultiplePermissionsResultInfo(activityResultSource.getSourceUuid(), requestMultiplePermissionsInfo.permissions, result));
+            Map<String, Boolean> shouldRationale = new HashMap<>();
+            for (Map.Entry<String, Boolean> entry : result.entrySet()) {
+                if (!entry.getValue()) {
+                    shouldRationale.put(entry.getKey(), shouldShowRequestPermissionRationale(activityResultSource, entry.getKey()));
+                }
+            }
+            requestMultiplePermissionsInfo.callback.onRequestMultiplePermissionsResult(new RequestMultiplePermissionsResultInfo(activityResultSource.getSourceUuid(), requestMultiplePermissionsInfo.permissions, result, shouldRationale));
         }
+    }
+
+    private boolean shouldShowRequestPermissionRationale(@NonNull ActivityResultSource activityResultSource, @NonNull String permission) {
+        boolean shouldRationale = false;
+        Activity activity = null;
+        if (activityResultSource instanceof Activity) {
+            activity = (Activity) activityResultSource;
+
+        } else if (activityResultSource instanceof Fragment) {
+            activity = ((Fragment) activityResultSource).getActivity();
+        }
+        if (activity != null) {
+            shouldRationale = ActivityCompat.shouldShowRequestPermissionRationale(activity, permission);
+        }
+        return shouldRationale;
     }
 }

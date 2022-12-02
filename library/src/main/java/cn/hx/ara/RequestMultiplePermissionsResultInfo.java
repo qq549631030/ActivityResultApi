@@ -10,10 +10,13 @@ public class RequestMultiplePermissionsResultInfo extends ActivityResultInfo {
     public final String[] permissions;
     @NonNull
     public final Map<String, Boolean> grantState;
+    @NonNull
+    public final Map<String, Boolean> shouldRationale;
 
-    public RequestMultiplePermissionsResultInfo(@NonNull String sourceUuid, @NonNull String[] permissions, @NonNull Map<String, Boolean> grantState) {
+    public RequestMultiplePermissionsResultInfo(@NonNull String sourceUuid, @NonNull String[] permissions, @NonNull Map<String, Boolean> grantState, @NonNull Map<String, Boolean> shouldRationale) {
         super(sourceUuid);
         this.permissions = permissions;
         this.grantState = grantState;
+        this.shouldRationale = shouldRationale;
     }
 }
